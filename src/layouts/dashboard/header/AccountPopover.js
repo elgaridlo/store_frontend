@@ -32,7 +32,9 @@ export default function AccountPopover() {
   };
 
   const handleClose = () => {
+    localStorage.removeItem(window.location.origin)
     setOpen(null);
+    window.location.reload();
   };
 
   return (

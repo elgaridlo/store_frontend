@@ -1,6 +1,8 @@
 import PropTypes from 'prop-types';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import jwt from 'jwt-decode';
+
 // @mui
 import { styled, alpha } from '@mui/material/styles';
 import { Box, Link, Button, Drawer, Typography, Avatar, Stack } from '@mui/material';
@@ -39,6 +41,18 @@ export default function Nav({ openNav, onCloseNav }) {
 
   const isDesktop = useResponsive('up', 'lg');
 
+  const [role, setRole] = useState('')
+
+  useEffect(() => {
+    const jwtToken = localStorage.getItem(window.location.origin);
+
+    if(jwtToken) {
+      const decode = jwt(jwtToken)
+      setRole(decode.role)
+    } 
+  }, [])
+
+
   useEffect(() => {
     if (openNav) {
       onCloseNav();
@@ -75,7 +89,8 @@ export default function Nav({ openNav, onCloseNav }) {
         </Link>
       </Box>
 
-      <NavSection data={navConfig} />
+      <NavSection data={(navConfig.length > 0) && navConfig
+        .filter((item) => item.role.includes(role))} />
 
       <Box sx={{ flexGrow: 1 }} />
 

@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet-async';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 // @mui
 import { Container, Stack, Typography } from '@mui/material';
 // components
@@ -10,7 +11,15 @@ import PRODUCTS from '../_mock/products';
 // ----------------------------------------------------------------------
 
 export default function ProductsPage() {
+  const navigate = useNavigate()
   const [openFilter, setOpenFilter] = useState(false);
+
+  useEffect(() => {
+    const jwtToken = localStorage.getItem(window.location.origin);
+    if (jwtToken === null) {
+      navigate('/login')
+    }
+  }, [])
 
   const handleOpenFilter = () => {
     setOpenFilter(true);

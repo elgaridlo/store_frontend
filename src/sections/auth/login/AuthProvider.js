@@ -1,5 +1,6 @@
 import axios from 'axios';
 import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import jwt from 'jwt-decode';
 import { baseUrl } from '../../../config';
 
@@ -20,12 +21,12 @@ const AuthContext = React.createContext();
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate()
   const login = async (username, password) => {
     const response = await axios.post(`${baseUrl}/api/v1/auth/login`, {
       username,
       password,
     });
-    console.log('response = ', response);
     const jwtToken = response.data.token;
 
     localStorage.setItem(window.location.origin, jwtToken);
@@ -42,6 +43,9 @@ const AuthProvider = ({ children }) => {
       const decoded = jwt(jwtToken);
 
       setUser(decoded);
+    }
+    if(jwtToken === null) {
+        navigate('/login')
     }
 
     setLoading(false);

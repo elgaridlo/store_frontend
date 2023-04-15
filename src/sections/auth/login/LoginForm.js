@@ -1,31 +1,28 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
-import * as yup from 'yup'
+import * as yup from 'yup';
 // @mui
-import { Link, Stack, IconButton, InputAdornment, TextField, Checkbox } from '@mui/material';
+import { Link, Stack, IconButton, InputAdornment, TextField, Checkbox, Snackbar, Alert } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 // components
 import Iconify from '../../../components/iconify';
 import { useAuth } from './AuthProvider';
 
-
 // ----------------------------------------------------------------------
 
 const validationSchema = yup.object({
-  username: yup
-    .string('Enter username address')
-    .required('Username is required'),
+  username: yup.string('Enter username address').required('Username is required'),
   password: yup
     .string('Enter password')
     .required('Password is required')
     .min(8, 'Password should be of minimum 8 char length'),
-})
+});
 
 export default function LoginForm() {
-  const [loginError, setLoginError] = useState(false)
-  const { login } = useAuth()
-  
+  const [loginError, setLoginError] = useState(false);
+  const { login } = useAuth();
+
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
@@ -41,26 +38,45 @@ export default function LoginForm() {
     },
     validationSchema,
     onSubmit: (values) => {
-      console.log('values = ', values)
+      console.log('values = ', values);
       login(values.username, values.password)
         .then(() => {
-          navigate('/')
+          navigate('/');
           // window.location.href('/')
         })
         .catch(() => {
-          setLoginError(true)
-        })
+          setLoginError(true);
+        });
     },
-  })
+  });
+
+  const snackbarErrorView = () => {
+    return (
+      <Snackbar
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        open={loginError}
+        autoHideDuration={6000}
+        onClose={() => setLoginError(false)}
+      >
+        <Alert onClose={() => setLoginError(false)} severity="error">
+          Please verify your credentials!
+        </Alert>
+      </Snackbar>
+    );
+  };
 
   return (
     <>
       <form autoComplete="off" noValidate onSubmit={formik.handleSubmit}>
         <Stack spacing={3}>
-          <TextField name="username" label="Username address" value={formik.values.username}
+          <TextField
+            name="username"
+            label="Username address"
+            value={formik.values.username}
             onChange={formik.handleChange}
             helperText={formik.touched.username && formik.errors.username}
-            error={formik.touched.username && Boolean(formik.errors.username)} />
+            error={formik.touched.username && Boolean(formik.errors.username)}
+          />
 
           <TextField
             name="password"
@@ -93,6 +109,7 @@ export default function LoginForm() {
           Login
         </LoadingButton>
       </form>
+      {snackbarErrorView()}
     </>
   );
 }
