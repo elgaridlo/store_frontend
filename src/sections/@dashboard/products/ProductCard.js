@@ -1,3 +1,4 @@
+import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 // @mui
 import { Box, Card, Link, Typography, Stack } from '@mui/material';
@@ -6,7 +7,7 @@ import { styled } from '@mui/material/styles';
 import { fCurrency } from '../../../utils/formatNumber';
 // components
 import Label from '../../../components/label';
-import { ColorPreview } from '../../../components/color-utils';
+import { addToCart } from '../../../services/products/cartSlice';
 
 // ----------------------------------------------------------------------
 
@@ -25,10 +26,14 @@ ShopProductCard.propTypes = {
 };
 
 export default function ShopProductCard({ product }) {
-  const { name, cover, price, colors, status, priceSale } = product;
+  const { id ,name, cover, price, status, priceSale } = product;
+  const dispatch = useDispatch()
 
+  const handler = (e) => {
+    dispatch(addToCart(product))  
+  }
   return (
-    <Card>
+    <Card onClick={() => handler(id)}>
       <Box sx={{ pt: '100%', position: 'relative' }}>
         {status && (
           <Label
@@ -56,7 +61,6 @@ export default function ShopProductCard({ product }) {
         </Link>
 
         <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <ColorPreview colors={colors} />
           <Typography variant="subtitle1">
             <Typography
               component="span"

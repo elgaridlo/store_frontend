@@ -1,53 +1,25 @@
+import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 // @mui
 import {
   Box,
-  Radio,
   Stack,
   Button,
   Drawer,
-  Rating,
   Divider,
-  Checkbox,
-  FormGroup,
   IconButton,
   Typography,
-  RadioGroup,
-  FormControlLabel,
+  ListItem,
+  ListItemText,
+  List,
+  MenuItem,
 } from '@mui/material';
 // components
 import Iconify from '../../../components/iconify';
 import Scrollbar from '../../../components/scrollbar';
-import { ColorMultiPicker } from '../../../components/color-utils';
+import { addQuantity, minusQuantity, removeFromCart } from '../../../services/products/cartSlice';
 
-// ----------------------------------------------------------------------
-
-export const SORT_BY_OPTIONS = [
-  { value: 'featured', label: 'Featured' },
-  { value: 'newest', label: 'Newest' },
-  { value: 'priceDesc', label: 'Price: High-Low' },
-  { value: 'priceAsc', label: 'Price: Low-High' },
-];
-export const FILTER_GENDER_OPTIONS = ['Men', 'Women', 'Kids'];
-export const FILTER_CATEGORY_OPTIONS = ['All', 'Shose', 'Apparel', 'Accessories'];
-export const FILTER_RATING_OPTIONS = ['up4Star', 'up3Star', 'up2Star', 'up1Star'];
-export const FILTER_PRICE_OPTIONS = [
-  { value: 'below', label: 'Below $25' },
-  { value: 'between', label: 'Between $25 - $75' },
-  { value: 'above', label: 'Above $75' },
-];
-export const FILTER_COLOR_OPTIONS = [
-  '#00AB55',
-  '#000000',
-  '#FFFFFF',
-  '#FFC0CB',
-  '#FF4842',
-  '#1890FF',
-  '#94D82D',
-  '#FFC107',
-];
-
-// ----------------------------------------------------------------------
 
 ShopFilterSidebar.propTypes = {
   openFilter: PropTypes.bool,
@@ -56,10 +28,24 @@ ShopFilterSidebar.propTypes = {
 };
 
 export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFilter }) {
+  const { cartItems } = useSelector((state) => state.carts)
+
+  const dispatch = useDispatch()
+  const handleDelete = (value) => {
+    dispatch(removeFromCart(value))
+  }
+
+  const handleAdd = (value) => {
+    dispatch(addQuantity(value))
+  }
+
+  const handleMinus = (value) => {
+    dispatch(minusQuantity(value))
+  }
   return (
     <>
       <Button disableRipple color="inherit" endIcon={<Iconify icon="ic:round-filter-list" />} onClick={onOpenFilter}>
-        Filters&nbsp;
+        Checkout&nbsp;
       </Button>
 
       <Drawer
@@ -72,7 +58,7 @@ export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFil
       >
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ px: 1, py: 2 }}>
           <Typography variant="subtitle1" sx={{ ml: 1 }}>
-            Filters
+            Menu Pesanan
           </Typography>
           <IconButton onClick={onCloseFilter}>
             <Iconify icon="eva:close-fill" />
@@ -84,80 +70,30 @@ export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFil
         <Scrollbar>
           <Stack spacing={3} sx={{ p: 3 }}>
             <div>
-              <Typography variant="subtitle1" gutterBottom>
-                Gender
-              </Typography>
-              <FormGroup>
-                {FILTER_GENDER_OPTIONS.map((item) => (
-                  <FormControlLabel key={item} control={<Checkbox />} label={item} />
-                ))}
-              </FormGroup>
-            </div>
-
-            <div>
-              <Typography variant="subtitle1" gutterBottom>
-                Category
-              </Typography>
-              <RadioGroup>
-                {FILTER_CATEGORY_OPTIONS.map((item) => (
-                  <FormControlLabel key={item} value={item} control={<Radio />} label={item} />
-                ))}
-              </RadioGroup>
-            </div>
-
-            <div>
-              <Typography variant="subtitle1" gutterBottom>
-                Colors
-              </Typography>
-              <ColorMultiPicker
-                name="colors"
-                selected={[]}
-                colors={FILTER_COLOR_OPTIONS}
-                onChangeColor={(color) => [].includes(color)}
-                sx={{ maxWidth: 38 * 4 }}
-              />
-            </div>
-
-            <div>
-              <Typography variant="subtitle1" gutterBottom>
-                Price
-              </Typography>
-              <RadioGroup>
-                {FILTER_PRICE_OPTIONS.map((item) => (
-                  <FormControlLabel key={item.value} value={item.value} control={<Radio />} label={item.label} />
-                ))}
-              </RadioGroup>
-            </div>
-
-            <div>
-              <Typography variant="subtitle1" gutterBottom>
-                Rating
-              </Typography>
-              <RadioGroup>
-                {FILTER_RATING_OPTIONS.map((item, index) => (
-                  <FormControlLabel
-                    key={item}
-                    value={item}
-                    control={
-                      <Radio
-                        disableRipple
-                        color="default"
-                        icon={<Rating readOnly value={4 - index} />}
-                        checkedIcon={<Rating readOnly value={4 - index} />}
-                        sx={{
-                          '&:hover': { bgcolor: 'transparent' },
-                        }}
+              <List>
+                {cartItems.length > 0 && cartItems.map((item) =>
+                (
+                  <React.Fragment key={item.id}>
+                    <ListItem
+                      secondaryAction={
+                        <MenuItem onClick={() => handleDelete(item)} sx={{ color: 'error.main' }}>
+                          <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
+                        </MenuItem>
+                      }
+                    >
+                      <ListItemText
+                        primary={item.name}
+                        secondary={`${item.quantity} x ${item.price} = ${item.quantity*item.price}`}
                       />
-                    }
-                    label="& Up"
-                    sx={{
-                      my: 0.5,
-                      borderRadius: 1,
-                      '&:hover': { opacity: 0.48 },
-                    }}
-                  />
-                ))}
-              </RadioGroup>
+                    </ListItem>
+                    <ListItem>
+                      <Button variant="contained" onClick={() => handleAdd(item)} startIcon={<Iconify icon="eva:plus-fill" />}/>
+                      <Button variant="outlined" onClick={() => handleMinus(item)} startIcon={<Iconify icon="eva:minus-fill" />}/>
+                    </ListItem>
+                  </React.Fragment>
+                ))
+                }
+              </List>
             </div>
           </Stack>
         </Scrollbar>

@@ -4,22 +4,31 @@ import { useNavigate } from 'react-router-dom';
 // @mui
 import { Container, Stack, Typography } from '@mui/material';
 // components
+import { useDispatch, useSelector } from 'react-redux';
 import { ProductSort, ProductList, ProductCartWidget, ProductFilterSidebar } from '../sections/@dashboard/products';
 // mock
 import PRODUCTS from '../_mock/products';
+import { fetchProducts, selectProducts } from '../services/products/productSlice';
+
 
 // ----------------------------------------------------------------------
 
 export default function ProductsPage() {
   const navigate = useNavigate()
-  const [openFilter, setOpenFilter] = useState(false);
+  const dispatch = useDispatch();
 
+  const [openFilter, setOpenFilter] = useState(false);
+  const { data: products } = useSelector(selectProducts)
+
+  console.log('data = ',products)
   useEffect(() => {
     const jwtToken = localStorage.getItem(window.location.origin);
     if (jwtToken === null) {
       navigate('/login')
+    } else {
+      dispatch(fetchProducts());
     }
-  }, [])
+  }, [navigate, dispatch])
 
   const handleOpenFilter = () => {
     setOpenFilter(true);
@@ -51,7 +60,16 @@ export default function ProductsPage() {
           </Stack>
         </Stack>
 
-        <ProductList products={PRODUCTS} />
+        {products && (
+          <ProductList products={products.map((item, index) => {
+            const setIndex = index + 1
+
+            return {
+              ...item,
+              cover: `/assets/images/products/product_${setIndex}.jpg`,
+            }
+          })} />
+        )}
         <ProductCartWidget />
       </Container>
     </>
