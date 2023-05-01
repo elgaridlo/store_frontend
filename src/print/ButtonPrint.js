@@ -16,7 +16,7 @@ export const FunctionalComponentWithFunctionalComponentToPrint = () => {
   }, []);
 
   const handleBeforePrint = React.useCallback(() => {
-    console.log("`onBeforePrint` called");
+    console.log("`onBeforePrint` calledd");
   }, []);
 
   const handleOnBeforeGetContent = React.useCallback(() => {
