@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
+import jwt from 'jwt-decode';
 // @mui
 import {
   Box,
@@ -18,8 +19,8 @@ import {
 // components
 import Iconify from '../../../components/iconify';
 import Scrollbar from '../../../components/scrollbar';
-import { addQuantity, minusQuantity, removeFromCart } from '../../../services/products/cartSlice';
-
+import { addQuantity, clearCart, minusQuantity, removeFromCart } from '../../../services/products/cartSlice';
+import { createTransactions } from '../../../services/products/transactionSlice';
 
 ShopFilterSidebar.propTypes = {
   openFilter: PropTypes.bool,
@@ -28,20 +29,42 @@ ShopFilterSidebar.propTypes = {
 };
 
 export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFilter }) {
-  const { cartItems } = useSelector((state) => state.carts)
+  const { cartItems } = useSelector((state) => state.carts);
+  const { status } = useSelector((state) => state.transactions);
+  const dispatch = useDispatch();
 
-  const dispatch = useDispatch()
+  useEffect(() => {
+    if (status === 'success') {
+      dispatch(clearCart());
+    }
+  }, [status]);
+
   const handleDelete = (value) => {
-    dispatch(removeFromCart(value))
-  }
+    dispatch(removeFromCart(value));
+  };
 
   const handleAdd = (value) => {
-    dispatch(addQuantity(value))
-  }
+    dispatch(addQuantity(value));
+  };
 
   const handleMinus = (value) => {
-    dispatch(minusQuantity(value))
-  }
+    dispatch(minusQuantity(value));
+  };
+
+  const handleCheckout = () => {
+    const jwtToken = localStorage.getItem(window.location.origin);
+    const decoded = jwt(jwtToken);
+
+    dispatch(
+      createTransactions(
+        cartItems.map((item) => ({
+          menu_id: item.id,
+          store_id: decoded.store_id,
+          quantity: item.quantity,
+        }))
+      )
+    );
+  };
   return (
     <>
       <Button disableRipple color="inherit" endIcon={<Iconify icon="ic:round-filter-list" />} onClick={onOpenFilter}>
@@ -71,28 +94,35 @@ export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFil
           <Stack spacing={3} sx={{ p: 3 }}>
             <div>
               <List>
-                {cartItems.length > 0 && cartItems.map((item) =>
-                (
-                  <React.Fragment key={item.id}>
-                    <ListItem
-                      secondaryAction={
-                        <MenuItem onClick={() => handleDelete(item)} sx={{ color: 'error.main' }}>
-                          <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-                        </MenuItem>
-                      }
-                    >
-                      <ListItemText
-                        primary={item.name}
-                        secondary={`${item.quantity} x ${item.price} = ${item.quantity*item.price}`}
-                      />
-                    </ListItem>
-                    <ListItem>
-                      <Button variant="contained" onClick={() => handleAdd(item)} startIcon={<Iconify icon="eva:plus-fill" />}/>
-                      <Button variant="outlined" onClick={() => handleMinus(item)} startIcon={<Iconify icon="eva:minus-fill" />}/>
-                    </ListItem>
-                  </React.Fragment>
-                ))
-                }
+                {cartItems.length > 0 &&
+                  cartItems.map((item) => (
+                    <React.Fragment key={item.id}>
+                      <ListItem
+                        secondaryAction={
+                          <MenuItem onClick={() => handleDelete(item)} sx={{ color: 'error.main' }}>
+                            <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
+                          </MenuItem>
+                        }
+                      >
+                        <ListItemText
+                          primary={item.name}
+                          secondary={`${item.quantity} x ${item.price} = ${item.quantity * item.price}`}
+                        />
+                      </ListItem>
+                      <ListItem>
+                        <Button
+                          variant="contained"
+                          onClick={() => handleAdd(item)}
+                          startIcon={<Iconify icon="eva:plus-fill" />}
+                        />
+                        <Button
+                          variant="outlined"
+                          onClick={() => handleMinus(item)}
+                          startIcon={<Iconify icon="eva:minus-fill" />}
+                        />
+                      </ListItem>
+                    </React.Fragment>
+                  ))}
               </List>
             </div>
           </Stack>
@@ -106,8 +136,9 @@ export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFil
             color="inherit"
             variant="outlined"
             startIcon={<Iconify icon="ic:round-clear-all" />}
+            onClick={() => handleCheckout()}
           >
-            Clear All
+            Checkout
           </Button>
         </Box>
       </Drawer>

@@ -5,10 +5,10 @@ import { useNavigate } from 'react-router-dom';
 import { Container, Stack, Typography } from '@mui/material';
 // components
 import { useDispatch, useSelector } from 'react-redux';
-import { ProductSort, ProductList, ProductCartWidget, ProductFilterSidebar } from '../sections/@dashboard/products';
+import { ProductList, ProductCartWidget, ProductFilterSidebar } from '../sections/@dashboard/products';
 // mock
-import PRODUCTS from '../_mock/products';
 import { fetchProducts, selectProducts } from '../services/products/productSlice';
+import { FunctionalComponentWithFunctionalComponentToPrint } from '../print/ButtonPrint';
 
 
 // ----------------------------------------------------------------------
@@ -20,7 +20,6 @@ export default function ProductsPage() {
   const [openFilter, setOpenFilter] = useState(false);
   const { data: products } = useSelector(selectProducts)
 
-  console.log('data = ',products)
   useEffect(() => {
     const jwtToken = localStorage.getItem(window.location.origin);
     if (jwtToken === null) {
@@ -56,7 +55,7 @@ export default function ProductsPage() {
               onOpenFilter={handleOpenFilter}
               onCloseFilter={handleCloseFilter}
             />
-            <ProductSort />
+            <FunctionalComponentWithFunctionalComponentToPrint />
           </Stack>
         </Stack>
 
